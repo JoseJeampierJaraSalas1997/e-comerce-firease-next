@@ -1,0 +1,2 @@
+*.node filter=lfs diff=lfs merge=lfs -text
+.next/cache/webpack/server-development/*.pack.gz filter=lfs diff=lfs merge=lfs -text
