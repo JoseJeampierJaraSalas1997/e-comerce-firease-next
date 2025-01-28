@@ -5,9 +5,14 @@ import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { Button } from 'primereact/button';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Rating } from 'primereact/rating';
-import { ProductService } from '../../../../demo/service/ProductService';
 import { InputText } from 'primereact/inputtext';
 import type { Demo } from '@/types';
+import { getProducts } from '@/app/api/firestoreFecth/get';
+import { deleteProduct } from '@/app/api/firestoreFecth/delete';
+import NewProductModal from './newItem';
+import EditProductModal from './EditProductModal';
+import { updateProduct } from '@/app/api/firestoreFecth/patch';
+import Swal from 'sweetalert2';
 
 export interface CartItem {
     id: string;
@@ -24,23 +29,25 @@ const ListDemo = () => {
     const [sortOrder, setSortOrder] = useState<0 | 1 | -1 | null>(null);
     const [sortField, setSortField] = useState('');
     const [filters, setFilters] = useState<{ [key: string]: string | null }>({});
-
     const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string | null }[]>([]);
     const [stockOptions, setStockOptions] = useState<{ label: string; value: string | null }[]>([]);
-
+    const [selectedProduct, setSelectedProduct] = useState<Demo.Product | null>(null);
+    const [showModalUpdate, setShowModalUpdate] = useState(false);
     const sortOptions = [
         { label: 'Mayor Precio', value: '!price' },
         { label: 'Menor Precio', value: 'price' },
     ];
+    const fetchProducts = async () => {
+        const data = await getProducts();
+        setDataViewValue(data);
+        setCategoryOptions(generateFilterOptions(data, 'category'));
+        setStockOptions(generateFilterOptions(data, 'inventoryStatus'));
+      };
 
     useEffect(() => {
-        ProductService.getProducts().then((data) => {
-            setDataViewValue(data);
-            setCategoryOptions(generateFilterOptions(data, 'category'));
-            setStockOptions(generateFilterOptions(data, 'inventoryStatus'));
-        });
+        fetchProducts();
         setGlobalFilterValue('');
-    }, []);
+      }, []);
 
     const generateFilterOptions = (data: Demo.Product[], key: keyof Demo.Product) => {
         const uniqueValues = Array.from(new Set(data.map((item) => item[key]).filter(Boolean))) as string[];
@@ -52,13 +59,18 @@ const ListDemo = () => {
 
     const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 
+    const [isModalVisible, setIsModalVisibleNewForms] = useState(false);
+    const showModal = () => setIsModalVisibleNewForms(true);
+    const hideModal = () => {setIsModalVisibleNewForms(false); fetchProducts()}
+    
+
     const onFilterChange = (key: string, value: string | null) => {
         setFilters((prevFilters) => ({
             ...prevFilters,
             [key]: value,
         }));
         applyFilters(globalFilterValue, { ...filters, [key]: value });
-    };
+    };    
 
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -101,6 +113,35 @@ const ListDemo = () => {
         }
     };
 
+    const handleDeleteProduct = async (productId: string) => {
+        if (productId) {
+            try {
+                await deleteProduct(productId);
+                await fetchProducts();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Producto eliminado!',
+                    text: 'El producto ha sido eliminado exitosamente.',
+                    confirmButtonText: 'Aceptar'
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Hubo un problema al eliminar el producto. Intenta nuevamente.',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ID inválido',
+                text: 'Por favor, ingresa un ID de producto válido.',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+      
     const generateUniqueId = (): string => {
         const now = new Date();
         const id = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}` +
@@ -154,6 +195,7 @@ const ListDemo = () => {
                 <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar aquí" />
             </span>
             <DataViewLayoutOptions layout={layout} onChange={(e) => setLayout(e.value)} />
+            <Button onClick={showModal}>Crear Producto</Button>
         </div>
     );
 
@@ -190,7 +232,9 @@ const ListDemo = () => {
                             <i className="pi pi-tag mr-2" />
                             <span className="font-semibold">{data.category}</span>
                         </div>
-                        <span className={`product-badge status-${data.inventoryStatus?.toLowerCase()}`}>{data.inventoryStatus}</span>
+                        <span className={`product-badge status-${data.inventoryStatus?.toLowerCase()}`}>
+                            {data.inventoryStatus}
+                        </span>
                     </div>
                     <div className="flex flex-column align-items-center text-center mb-3">
                         <img src={`/demo/images/product/depsoito_dental.png`} alt={data.name} className="w-9 shadow-2 my-3 mx-0" />
@@ -200,12 +244,15 @@ const ListDemo = () => {
                     </div>
                     <div className="flex align-items-center justify-content-between">
                         <span className="text-2xl font-semibold">S/. {data.price}</span>
-                        <Button icon="pi pi-shopping-cart" disabled={data.inventoryStatus === 'AGOTADO'}  onClick={() => addToCart(data)}/>
+                        <Button icon="pi pi-shopping-cart" disabled={data.inventoryStatus === 'AGOTADO'} onClick={() => addToCart(data)} />
+                        <Button icon="pi pi-pencil" onClick={() => handleUpdateProduct(data.id as string)}/>
+                        <Button icon="pi pi-trash" onClick={() => handleDeleteProduct(data.id as string)}/>
                     </div>
                 </div>
             </div>
         );
     };
+    
 
     const itemTemplate = (data: Demo.Product, layout: 'grid' | 'list' | (string & Record<string, unknown>)) => {
         if (!data) {
@@ -219,11 +266,64 @@ const ListDemo = () => {
         }
     };
 
+
+    const handleUpdateProduct = (productId: string) => {
+        const product = dataViewValue.find((p) => p.id === productId);
+        setSelectedProduct(product || null);
+        setShowModalUpdate(true);
+    };
+
+    const handleSaveProduct = async (updatedProduct: Demo.Product) => {
+        console.log("Este es el id del producto: ",updatedProduct.id);
+        
+        if (updatedProduct.id) {
+            try {
+                await updateProduct(updatedProduct.id, updatedProduct); 
+                setShowModalUpdate(false);
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Producto actualizado!',
+                    text: 'El producto ha sido actualizado exitosamente.',
+                    confirmButtonText: 'Aceptar'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        await fetchProducts();
+                        setShowModalUpdate(false);
+                    }
+                });
+            } catch (error) {
+                console.error("Error al actualizar el producto", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Hubo un problema al actualizar el producto. Intenta nuevamente.',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ID de producto inválido',
+                text: 'Por favor, asegúrate de que el producto tenga un ID válido.',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+
+
     return (
         <div className="grid">
             <div className="col-12">
                 <div className="card">
                     <h5>Productos</h5>
+                    <NewProductModal visible={isModalVisible} onHide={hideModal} />
+                    {/* Aquí agregamos el modal */}
+                    <EditProductModal 
+                        showModal={showModalUpdate}
+                        product={selectedProduct}
+                        onHide={() => setShowModalUpdate(false)} 
+                        onSave={handleSaveProduct}
+                    />
                     <DataView
                         value={filteredValue || dataViewValue}
                         layout={layout}
