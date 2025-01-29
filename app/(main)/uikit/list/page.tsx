@@ -33,6 +33,7 @@ const ListDemo = () => {
     const [stockOptions, setStockOptions] = useState<{ label: string; value: string | null }[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Demo.Product | null>(null);
     const [showModalUpdate, setShowModalUpdate] = useState(false);
+    const [flag, setFlag] = useState(false);
     const sortOptions = [
         { label: 'Mayor Precio', value: '!price' },
         { label: 'Menor Precio', value: 'price' },
@@ -45,6 +46,10 @@ const ListDemo = () => {
       };
 
     useEffect(() => {
+        const toke = localStorage.getItem('token_with_google')
+        if (toke) {
+            setFlag(true)
+        }
         fetchProducts();
         setGlobalFilterValue('');
       }, []);
@@ -195,7 +200,9 @@ const ListDemo = () => {
                 <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Buscar aquí" />
             </span>
             <DataViewLayoutOptions layout={layout} onChange={(e) => setLayout(e.value)} />
-            <Button onClick={showModal}>Crear Producto</Button>
+            {flag && (
+                <Button onClick={showModal}>Crear Producto</Button>
+            )}
         </div>
     );
 
@@ -236,8 +243,9 @@ const ListDemo = () => {
                             {data.inventoryStatus}
                         </span>
                     </div>
+            
                     <div className="flex flex-column align-items-center text-center mb-3">
-                        <img src={`/demo/images/product/depsoito_dental.png`} alt={data.name} className="w-9 shadow-2 my-3 mx-0" />
+                        <img src={data.image && data.image.startsWith('http') ? data.image : '/demo/images/product/depsoito_dental.png'} alt={data.name} className="w-9 shadow-2 my-3 mx-0" />
                         <div className="text-2xl font-bold">{data.name}</div>
                         <div className="mb-3">{data.description}</div>
                         <Rating value={data.rating} readOnly cancel={false} />
@@ -245,8 +253,9 @@ const ListDemo = () => {
                     <div className="flex align-items-center justify-content-between">
                         <span className="text-2xl font-semibold">S/. {data.price}</span>
                         <Button icon="pi pi-shopping-cart" disabled={data.inventoryStatus === 'AGOTADO'} onClick={() => addToCart(data)} />
-                        <Button icon="pi pi-pencil" onClick={() => handleUpdateProduct(data.id as string)}/>
-                        <Button icon="pi pi-trash" onClick={() => handleDeleteProduct(data.id as string)}/>
+                        {flag && (
+                            <><Button icon="pi pi-pencil" onClick={() => handleUpdateProduct(data.id as string)}/>
+                            <Button icon="pi pi-trash" onClick={() => handleDeleteProduct(data.id as string)}/></>)}
                     </div>
                 </div>
             </div>
@@ -310,7 +319,7 @@ const ListDemo = () => {
         }
     };
 
-
+    
     return (
         <div className="grid">
             <div className="col-12">

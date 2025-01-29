@@ -9,9 +9,10 @@ import Swal from "sweetalert2";
 import { Rating, RatingChangeEvent } from "primereact/rating";
 import { Dropdown } from "primereact/dropdown";
 import { ProgressSpinner } from "primereact/progressspinner";
+import * as filestack from 'filestack-js';
 
 type DropdownChangeEvent = React.ChangeEvent<HTMLInputElement>;
-
+const filestackClient = filestack.init('AP4HNVeB5T8G5Fd3jdhdez');
 const NewProductModal = ({ visible, onHide }: { visible: boolean, onHide: () => void }) => {
     const [product, setProduct] = useState({
         name: "",
@@ -24,6 +25,8 @@ const NewProductModal = ({ visible, onHide }: { visible: boolean, onHide: () => 
         rating: 0
     });
     const [loading, setLoading] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+    const [imageName, setImageName] = useState<string>(''); 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement> | DropdownChangeEvent | RatingChangeEvent,
         field: string
@@ -74,6 +77,28 @@ const NewProductModal = ({ visible, onHide }: { visible: boolean, onHide: () => 
         setLoading(false);
     };
 
+    const handleUpload = () => {
+        setLoading(true); // Activamos el loading
+    
+        // Abre el selector de archivos Filestack
+        filestackClient.picker({
+          accept: 'image/*',
+          fromSources: ['local_file_system'],
+          onFileUploadFinished: (file: any) => {
+            const uploadedImageUrl = file.url;
+            setImageUrl(uploadedImageUrl);
+            setImageName(uploadedImageUrl);
+            setLoading(false);
+            setProduct((prevProduct) => ({
+                ...prevProduct,
+                image: uploadedImageUrl,
+              }));
+            console.log('Imagen subida:', uploadedImageUrl);
+          },
+        }).open();
+      };
+
+
     return (
         <>
             <Dialog header="Crear nuevo producto" style={{ width: '50vw' }} visible={visible} onHide={onHide}>
@@ -109,9 +134,27 @@ const NewProductModal = ({ visible, onHide }: { visible: boolean, onHide: () => 
                             <InputText id="category" value={product.category} onChange={(e) => handleInputChange(e, "category")} />
                         </div>
 
-                        <div className="field">
-                            <label htmlFor="image">Imagen</label>
-                            <InputText id="image" value={product.image} onChange={(e) => handleInputChange(e, "image")} />
+                        <div>
+                            <div className="field">
+                                <label htmlFor="image">Imagen</label>
+                                <InputText
+                                    id="image"
+                                    value={imageName}
+                                    onChange={() => {}}
+                                    disabled={false}
+                                />
+                            </div>
+
+                            <div>
+                                <button onClick={handleUpload} disabled={loading}>Subir Imagen</button>
+                                {loading && <p>Subiendo...</p>}
+                                {imageUrl && !loading && (
+                                    <div>
+                                        <h3>Imagen subida:</h3>
+                                        <img src={imageUrl} alt="Imagen subida" width="300" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="field">
