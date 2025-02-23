@@ -136,7 +136,7 @@ interface MainLayoutProps {
 }
 
 export const metadata: Metadata = {
-    title: "Sakai by PrimeReact | Free Admin Template for Next.js",
+    title: "Sakai by Jose Jeampier Jara Salas | Free Admin Template for Next.js",
     ...
   };
 
@@ -161,7 +161,7 @@ interface FullPageLayoutProps {
 }
 
 export const metadata: Metadata = {
-    title: "Sakai by PrimeReact | Free Admin Template for Next.js",
+    title: "Sakai by Jose Jeampier Jara Salas | Free Admin Template for Next.js",
     ...
   };
 
