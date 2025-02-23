@@ -19,6 +19,7 @@
     "cloudinary": "^2.5.1",
     "filestack-js": "^3.37.5",
     "firebase": "^11.2.0",
+    "lucide-react": "^0.475.0",
     "next": "13.4.8",
     "next-cloudinary": "^6.16.0",
     "primeflex": "^3.3.1",

@@ -9,7 +9,26 @@ import { Sidebar } from 'primereact/sidebar';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
+import { AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { Badge } from 'primereact/badge';
+
+interface DentalTip {
+    icon: string;
+    title: string;
+    message: string;
+}
+
+const shimmerAnimation = `
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+`;
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
@@ -23,6 +42,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [customerName, setCustomerName] = useState('');
     const [totalAmount, setTotalAmount] = useState(0);
+    const [currentMessage, setCurrentMessage] = useState<DentalTip | null>(null);
+    const [isVisible, setIsVisible] = useState(true);
 
     useImperativeHandle(ref, () => ({
         menubutton: menubuttonRef.current,
@@ -48,7 +69,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             const totalQuantity = existingCart.reduce((acc, item) => acc + item.quantity, 0);
             setCartCount(totalQuantity);
             const subtotal = existingCart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-            setTotalAmount(subtotal); // Actualiza el monto total
+            setTotalAmount(subtotal);
         };
 
         updateCart();
@@ -123,16 +144,88 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         });
     };
 
+    const dentalTips = [
+        {
+            icon: '🦷',
+            title: 'Consejo del día',
+            message: "Cepíllate los dientes después de cada comida para una mejor salud bucal"
+        },
+        {
+            icon: '⭐',
+            title: 'Recordatorio',
+            message: "El uso diario de hilo dental previene las caries interproximales"
+        },
+        {
+            icon: '💫',
+            title: '¿Sabías que?',
+            message: "Una buena higiene dental está relacionada con la salud cardiovascular"
+        },
+        {
+            icon: '🪥',
+            title: 'Tip profesional',
+            message: "Cambia tu cepillo dental cada 3 meses para mantener una limpieza efectiva"
+        },
+        {
+            icon: '✨',
+            title: 'Dato importante',
+            message: "La primera visita al dentista debe ser antes del primer año de edad"
+        }
+    ];
 
+    useEffect(() => {
+        const showRandomMessage = () => {
+            setIsVisible(false);
+
+            // Esperamos a que termine la animación de salida
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * dentalTips.length);
+                setCurrentMessage(dentalTips[randomIndex]);
+                setIsVisible(true);
+            }, 500);
+        };
+
+        showRandomMessage();
+        const intervalId = setInterval(showRandomMessage, 15000);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
 
     return (
         <div className="layout-topbar">
-            <Link href="/" className="layout-topbar-logo">
-                <img src={`/layout/images/logo-${layoutConfig.colorScheme !== 'light' ? 'white' : 'dark'}.svg`} width="47.22px" height={'35px'} alt="logo" />
-                <span>Mayhua - tienda online</span>
-            </Link>
-            {flag && (
+            {currentMessage ? (
+                <div className="px-4 py-2 w-full max-w-3xl mx-auto">
+                    <div
+                        className={`
+                            relative overflow-hidden
+                            bg-gradient-to-r from-blue-50 to-indigo-50
+                            border border-blue-200
+                            shadow-lg rounded-xl
+                            transition-all duration-500 ease-in-out
+                            ${isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-4'}
+                            `}
+                    >
+                        <div className="flex items-center p-4">
+                            <div className="flex-shrink-0 mr-4">
+                                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span className="text-xl">{currentMessage.icon}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-blue-900 mb-1">
+                                    {currentMessage.title}
+                                </p>
+                                <p className="text-sm text-blue-700 leading-5">
+                                    {currentMessage.message}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {!flag && (
                 <>
                     <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
                         <i className="pi pi-bars" />
@@ -155,9 +248,10 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             borderRadius: '9999px',
                         }}
                     >
-                        {cartCount}
+                        
                     </span>
                 </button>
+                <Badge value={`${cartCount}`} severity="success"></Badge>
             </div>
 
             <Sidebar visible={isSidebarOpen} position="right" onHide={() => setIsSidebarOpen(false)} style={{ width: '50vw' }} header="Mi carrito">
