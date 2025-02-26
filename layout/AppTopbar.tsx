@@ -191,17 +191,17 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
     return (
         <div className="layout-topbar">
-            {currentMessage ? (
+            {currentMessage && window.innerWidth > 768 ? (
                 <div className="px-4 py-2 w-full max-w-3xl mx-auto">
                     <div
                         className={`
-                            relative overflow-hidden
-                            bg-gradient-to-r from-blue-50 to-indigo-50
-                            border border-blue-200
-                            shadow-lg rounded-xl
-                            transition-all duration-500 ease-in-out
-                            ${isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-4'}
-                            `}
+                relative overflow-hidden
+                bg-gradient-to-r from-blue-50 to-indigo-50
+                border border-blue-200
+                shadow-lg rounded-xl
+                transition-all duration-500 ease-in-out
+                ${isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-4'}
+                `}
                     >
                         <div className="flex items-center p-4">
                             <div className="flex-shrink-0 mr-4">
@@ -222,19 +222,29 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                     </div>
                 </div>
             ) : null}
-
-            {!flag && (
-                <>
-                    <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
-                        <i className="pi pi-bars" />
-                    </button>
-                    <button ref={topbarmenubuttonRef} type="button" className="p-link layout-topbar-menu-button layout-topbar-button" onClick={showProfileSidebar}>
-                        <i className="pi pi-ellipsis-v" />
-                    </button>
-                </>
-            )}
-            <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button type="button" className="p-link layout-topbar-button" onClick={() => setIsSidebarOpen(true)}>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    flexWrap: 'wrap'
+                }}
+            >
+                <button
+                    type="button"
+                    className="p-link layout-topbar-button"
+                    onClick={() => setIsSidebarOpen(true)}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '5px',
+                        borderRadius: '8px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                    }}
+                >
                     <img src={cart.src} alt="" style={{ width: '70%' }} />
                     <span
                         className="absolute top-0 right-0 flex items-center justify-center"
@@ -244,13 +254,20 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                             fontSize: '0.75rem',
                             fontWeight: 'bold',
                             borderRadius: '9999px',
+                            minWidth: '18px',
+                            minHeight: '18px',
+                            padding: '2px 5px',
+                            display: cartCount > 0 ? 'flex' : 'none',
                         }}
                     >
-                        
+                        {cartCount}
+                        <Badge value={`${cartCount}`} severity="success" style={{ fontSize: '0.85rem', padding: '4px 8px' }} />
+
                     </span>
                 </button>
-                <Badge value={`${cartCount}`} severity="success"></Badge>
+
             </div>
+
 
             <Sidebar visible={isSidebarOpen} position="right" onHide={() => setIsSidebarOpen(false)} style={{ width: '50vw' }} header="Mi carrito">
                 <table className="w-full table-auto">
