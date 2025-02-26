@@ -117,7 +117,7 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         const message = `Hola, vengo de tu página web. Mi nombre es: ${customerName}.\n\nQuiero adquirir los siguientes productos:\n${orderDetails}`;
 
         const encodedMessage = encodeURIComponent(message);
-        const whatsappURL = `https://wa.me/+51968097419?text=${encodedMessage}`; // Reemplaza <TU_NUMERO_DE_TELEFONO> por el número de WhatsApp.
+        const whatsappURL = `https://wa.me/+51984767358?text=${encodedMessage}`; // Reemplaza <TU_NUMERO_DE_TELEFONO> por el número de WhatsApp.
         setIsSidebarOpen(false)
 
         Swal.fire({
