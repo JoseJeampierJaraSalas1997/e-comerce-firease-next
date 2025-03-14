@@ -20,8 +20,8 @@ const ChartDemo = () => {
             datasets: [
                 {
                     label: 'My First dataset',
-                    backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
-                    borderColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
+                    backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#8bc927',
+                    borderColor: documentStyle.getPropertyValue('--primary-500') || '#8bc927',
                     data: [65, 59, 80, 81, 56, 55, 40]
                 },
                 {
@@ -75,7 +75,7 @@ const ChartDemo = () => {
             datasets: [
                 {
                     data: [540, 325, 702],
-                    backgroundColor: [documentStyle.getPropertyValue('--indigo-500') || '#6366f1', documentStyle.getPropertyValue('--purple-500') || '#a855f7', documentStyle.getPropertyValue('--teal-500') || '#14b8a6'],
+                    backgroundColor: [documentStyle.getPropertyValue('--indigo-500') || '#8bc927', documentStyle.getPropertyValue('--purple-500') || '#a855f7', documentStyle.getPropertyValue('--teal-500') || '#14b8a6'],
                     hoverBackgroundColor: [documentStyle.getPropertyValue('--indigo-400') || '#8183f4', documentStyle.getPropertyValue('--purple-400') || '#b975f9', documentStyle.getPropertyValue('--teal-400') || '#41c5b7']
                 }
             ]
@@ -99,8 +99,8 @@ const ChartDemo = () => {
                     label: 'First Dataset',
                     data: [65, 59, 80, 81, 56, 55, 40],
                     fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
-                    borderColor: documentStyle.getPropertyValue('--primary-500') || '#6366f1',
+                    backgroundColor: documentStyle.getPropertyValue('--primary-500') || '#8bc927',
+                    borderColor: documentStyle.getPropertyValue('--primary-500') || '#8bc927',
                     tension: 0.4
                 },
                 {
@@ -153,7 +153,7 @@ const ChartDemo = () => {
                 {
                     data: [11, 16, 7, 3],
                     backgroundColor: [
-                        documentStyle.getPropertyValue('--indigo-500') || '#6366f1',
+                        documentStyle.getPropertyValue('--indigo-500') || '#8bc927',
                         documentStyle.getPropertyValue('--purple-500') || '#a855f7',
                         documentStyle.getPropertyValue('--teal-500') || '#14b8a6',
                         documentStyle.getPropertyValue('--orange-500') || '#f97316'
